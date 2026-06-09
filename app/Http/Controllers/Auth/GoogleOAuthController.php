@@ -37,8 +37,11 @@ class GoogleOAuthController extends Controller
         }
 
         try {
+            /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+            $driver = Socialite::driver('google');
+            $driver->enablePkce();
             /** @var \Laravel\Socialite\Two\User $googleUser */
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = $driver->user();
             $user = $service->resolve($googleUser);
         } catch (InvalidStateException|EmailNotVerifiedException|RegistrationNotAllowedException $e) {
             return $this->fail();

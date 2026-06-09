@@ -26,7 +26,7 @@ Route::get('/shared-report', function () {
     return Inertia::render('SharedReport');
 })->name('shared-report');
 
-Route::middleware(['throttle:30,1'])->group(function (): void {
+Route::middleware(['guest:web', 'throttle:30,1'])->group(function (): void {
     Route::get('/auth/google/redirect', [GoogleOAuthController::class, 'redirect'])
         ->name('auth.google.redirect');
     Route::get('/auth/google/callback', [GoogleOAuthController::class, 'callback'])

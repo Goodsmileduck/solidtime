@@ -72,11 +72,12 @@ class GoogleOAuthService
 
     private function linkConnection(User $user, string $providerUserId): OAuthConnection
     {
-        return OAuthConnection::create([
-            'user_id' => $user->getKey(),
-            'provider' => 'google',
-            'provider_user_id' => $providerUserId,
-        ]);
+        // firstOrCreate keeps this idempotent: two concurrent callbacks for the same
+        // Google identity won't violate the unique(provider, provider_user_id) index.
+        return OAuthConnection::firstOrCreate(
+            ['provider' => 'google', 'provider_user_id' => $providerUserId],
+            ['user_id' => $user->getKey()],
+        );
     }
 
     private function createUser(SocialiteUser $googleUser, string $email, string $providerUserId): User

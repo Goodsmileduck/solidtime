@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Auth;
 
-use App\Models\OAuthConnection;
-use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 use Laravel\Socialite\Two\User as SocialiteUser;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 
@@ -29,6 +27,7 @@ class GoogleOAuthControllerTest extends TestCase
     private function mockCallback(SocialiteUser $user): void
     {
         $provider = Mockery::mock(GoogleProvider::class);
+        $provider->shouldReceive('enablePkce')->andReturnSelf();
         $provider->shouldReceive('user')->andReturn($user);
         Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
     }
@@ -52,6 +51,33 @@ class GoogleOAuthControllerTest extends TestCase
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', ['email' => 'new@example.com']);
         $this->assertDatabaseHas('oauth_connections', ['provider_user_id' => 'sub-1']);
+    }
+
+    public function test_callback_regenerates_the_session_id(): void
+    {
+        config(['app.enable_registration' => true, 'app.registration_allowlist' => null]);
+        $this->mockCallback($this->fakeGoogleUser('new@example.com'));
+
+        $this->startSession();
+        $oldSessionId = session()->getId();
+
+        $this->get(route('auth.google.callback'));
+
+        $this->assertNotSame($oldSessionId, session()->getId(), 'session id should rotate after login (session fixation defense)');
+    }
+
+    public function test_callback_invalid_state_redirects_to_login(): void
+    {
+        $provider = Mockery::mock(GoogleProvider::class);
+        $provider->shouldReceive('enablePkce')->andReturnSelf();
+        $provider->shouldReceive('user')->andThrow(new \Laravel\Socialite\Two\InvalidStateException);
+        Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+        $response = $this->get(route('auth.google.callback'));
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('message');
+        $this->assertGuest();
     }
 
     public function test_callback_blocked_by_allowlist_redirects_to_login_with_message(): void

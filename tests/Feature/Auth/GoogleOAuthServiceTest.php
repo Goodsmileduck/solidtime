@@ -7,6 +7,7 @@ namespace Tests\Feature\Auth;
 use App\Exceptions\OAuth\EmailNotVerifiedException;
 use App\Exceptions\OAuth\RegistrationNotAllowedException;
 use App\Models\OAuthConnection;
+use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\GoogleAccountLinked;
 use App\Service\GoogleOAuthService;
@@ -43,12 +44,22 @@ class GoogleOAuthServiceTest extends TestCase
     {
         Notification::fake();
         $user = User::factory()->create(['email' => 'existing@example.com']);
+        $orgCountBefore = Organization::count();
 
         $resolved = app(GoogleOAuthService::class)->resolve($this->socialiteUser('existing@example.com'));
 
         $this->assertTrue($resolved->is($user));
         $this->assertDatabaseHas('oauth_connections', ['user_id' => $user->getKey(), 'provider_user_id' => 'sub-1']);
         Notification::assertSentTo($user, GoogleAccountLinked::class);
+        $this->assertSame($orgCountBefore, Organization::count(), 'auto-link must not create a new organization');
+    }
+
+    public function test_new_user_blocked_when_registration_disabled(): void
+    {
+        config(['app.enable_registration' => false, 'app.registration_allowlist' => null]);
+
+        $this->expectException(RegistrationNotAllowedException::class);
+        app(GoogleOAuthService::class)->resolve($this->socialiteUser('new@example.com'));
     }
 
     public function test_new_user_is_created_with_org_and_verified_email(): void
