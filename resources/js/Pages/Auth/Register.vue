@@ -2,6 +2,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
+import GoogleOAuthSection from '@/Components/GoogleOAuthSection.vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
@@ -60,6 +61,8 @@ const page = usePage<{
             class="bg-red-400 text-black text-center w-full px-3 py-1 mb-4 rounded-lg">
             {{ page.props.flash?.message }}
         </div>
+
+        <GoogleOAuthSection />
 
         <form @submit.prevent="submit">
             <Field>

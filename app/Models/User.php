@@ -200,6 +200,14 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     }
 
     /**
+     * @return HasMany<OAuthConnection, $this>
+     */
+    public function oauthConnections(): HasMany
+    {
+        return $this->hasMany(OAuthConnection::class);
+    }
+
+    /**
      * @param  Builder<User>  $builder
      */
     public function scopeActive(Builder $builder): void
