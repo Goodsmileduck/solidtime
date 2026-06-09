@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Auth\GoogleOAuthController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,13 @@ Route::get('/', [HomeController::class, 'index']);
 Route::get('/shared-report', function () {
     return Inertia::render('SharedReport');
 })->name('shared-report');
+
+Route::middleware(['throttle:30,1'])->group(function (): void {
+    Route::get('/auth/google/redirect', [GoogleOAuthController::class, 'redirect'])
+        ->name('auth.google.redirect');
+    Route::get('/auth/google/callback', [GoogleOAuthController::class, 'callback'])
+        ->name('auth.google.callback');
+});
 
 Route::middleware([
     'auth:web',
