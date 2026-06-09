@@ -53,7 +53,7 @@ class GoogleOAuthServiceTest extends TestCase
 
     public function test_new_user_is_created_with_org_and_verified_email(): void
     {
-        config(['app.registration_allowlist' => null]);
+        config(['app.enable_registration' => true, 'app.registration_allowlist' => null]);
 
         $resolved = app(GoogleOAuthService::class)->resolve($this->socialiteUser('new@example.com', name: 'New Person'));
 
@@ -72,7 +72,7 @@ class GoogleOAuthServiceTest extends TestCase
 
     public function test_new_user_blocked_by_allowlist(): void
     {
-        config(['app.registration_allowlist' => '@allowed.com']);
+        config(['app.enable_registration' => true, 'app.registration_allowlist' => '@allowed.com']);
         $this->expectException(RegistrationNotAllowedException::class);
         app(GoogleOAuthService::class)->resolve($this->socialiteUser('outsider@blocked.com'));
     }
@@ -89,7 +89,7 @@ class GoogleOAuthServiceTest extends TestCase
 
     public function test_placeholder_user_is_not_linked(): void
     {
-        config(['app.registration_allowlist' => null]);
+        config(['app.enable_registration' => true, 'app.registration_allowlist' => null]);
         User::factory()->create(['email' => 'ghost@example.com', 'is_placeholder' => true]);
 
         $resolved = app(GoogleOAuthService::class)->resolve($this->socialiteUser('ghost@example.com'));

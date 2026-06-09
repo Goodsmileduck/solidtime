@@ -19,6 +19,7 @@ class GoogleOAuthService
     public function __construct(
         private readonly RegistrationAllowlist $allowlist,
         private readonly UserService $userService,
+        private readonly IpLookupServiceContract $ipLookup,
     ) {}
 
     /**
@@ -80,7 +81,7 @@ class GoogleOAuthService
 
     private function createUser(SocialiteUser $googleUser, string $email, string $providerUserId): User
     {
-        $ipLookup = app(IpLookupServiceContract::class)->lookup(request()->ip() ?? '');
+        $ipLookup = $this->ipLookup->lookup(request()->ip());
         $timezone = $ipLookup?->timezone ?? 'UTC';
         $startOfWeek = $ipLookup?->startOfWeek ?? Weekday::Monday;
         $currency = $ipLookup?->currency;
