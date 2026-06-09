@@ -42,3 +42,6 @@ yarn-error.log
 /data
 /config/caddy
 /config/composer
+
+# Superpowers planning artifacts (local only)
+docs/superpowers/
