@@ -81,10 +81,15 @@ class GoogleOAuthService
 
     private function createUser(SocialiteUser $googleUser, string $email, string $providerUserId): User
     {
+        $timezone = 'UTC';
+        $startOfWeek = Weekday::Monday;
+        $currency = null;
         $ipLookup = $this->ipLookup->lookup(request()->ip());
-        $timezone = $ipLookup?->timezone ?? 'UTC';
-        $startOfWeek = $ipLookup?->startOfWeek ?? Weekday::Monday;
-        $currency = $ipLookup?->currency;
+        if ($ipLookup !== null) {
+            $timezone = $ipLookup->timezone ?? 'UTC';
+            $startOfWeek = $ipLookup->startOfWeek ?? Weekday::Monday;
+            $currency = $ipLookup->currency;
+        }
 
         return DB::transaction(function () use ($googleUser, $email, $providerUserId, $timezone, $startOfWeek, $currency): User {
             $user = $this->userService->createUser(

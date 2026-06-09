@@ -18,7 +18,9 @@ class GoogleOAuthController extends Controller
 {
     public function redirect(): SymfonyRedirect
     {
-        $driver = Socialite::driver('google')->enablePkce();
+        /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+        $driver = Socialite::driver('google');
+        $driver->enablePkce();
 
         $hostedDomain = config('services.google.hosted_domain');
         if (is_string($hostedDomain) && $hostedDomain !== '') {
@@ -35,6 +37,7 @@ class GoogleOAuthController extends Controller
         }
 
         try {
+            /** @var \Laravel\Socialite\Two\User $googleUser */
             $googleUser = Socialite::driver('google')->user();
             $user = $service->resolve($googleUser);
         } catch (InvalidStateException|EmailNotVerifiedException|RegistrationNotAllowedException $e) {
