@@ -75,6 +75,8 @@ return [
 
     'enable_registration' => (bool) env('APP_ENABLE_REGISTRATION', false),
 
+    'registration_allowlist' => env('REGISTRATION_ALLOWLIST'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
