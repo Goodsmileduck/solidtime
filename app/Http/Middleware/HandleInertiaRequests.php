@@ -61,6 +61,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
             ],
+            'googleOAuthEnabled' => filled(config('services.google.client_id')),
         ]);
     }
 }
