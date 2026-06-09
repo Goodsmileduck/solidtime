@@ -8,6 +8,7 @@ use App\Enums\Weekday;
 use App\Events\NewsletterRegistered;
 use App\Models\User;
 use App\Service\IpLookup\IpLookupServiceContract;
+use App\Service\RegistrationAllowlist;
 use App\Service\TimezoneService;
 use App\Service\UserService;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,6 +36,12 @@ class CreateNewUser implements CreatesNewUsers
         if (! config('app.enable_registration')) {
             throw ValidationException::withMessages([
                 'email' => [__('Registration is disabled.')],
+            ]);
+        }
+
+        if (isset($input['email']) && is_string($input['email']) && ! app(RegistrationAllowlist::class)->allows($input['email'])) {
+            throw ValidationException::withMessages([
+                'email' => [__('Registration is restricted to approved email addresses.')],
             ]);
         }
 
