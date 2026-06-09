@@ -50,7 +50,7 @@ class GoogleOAuthService
         // 2. Existing user by (non-placeholder) email -> auto-link + notify.
         $existing = User::query()
             ->where('email', '=', $email)
-            ->where('is_placeholder', '=', false)
+            ->active()
             ->first();
         if ($existing !== null) {
             $this->linkConnection($existing, $providerUserId);
@@ -60,10 +60,7 @@ class GoogleOAuthService
         }
 
         // 3. New user -> gate on global registration flag + allowlist, then create.
-        if (! config('app.enable_registration')) {
-            throw new RegistrationNotAllowedException;
-        }
-        if (! $this->allowlist->allows($email)) {
+        if (! config('app.enable_registration') || ! $this->allowlist->allows($email)) {
             throw new RegistrationNotAllowedException;
         }
 
